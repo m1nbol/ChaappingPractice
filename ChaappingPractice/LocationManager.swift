@@ -14,12 +14,14 @@ import Observation
 class LocationManager: NSObject {
     static let shared = LocationManager()
     
-    // MARK: - CLLocationManager
     private let locationManager = CLLocationManager()
+    private let geocoder = CLGeocoder()
     
     // MARK: - Published Properties
     var currentLocation: CLLocation?
     var currentHeading: CLHeading?
+    
+    var currentAddress: String? = nil
     
     var currentSpeed: CLLocationSpeed = 0
     var currentDirection: CLLocationDirection = 0
@@ -91,10 +93,37 @@ extension LocationManager: CLLocationManagerDelegate {
     }
 }
 
+//MARK: - Reverse Geocoding
 extension LocationManager {
-    func printCurrentLocation() {
+    @MainActor
+    func reverseGeocode(location: CLLocation) async {
+        do {
+            let placemarks = try await geocoder.reverseGeocodeLocation(location)
+            if let placemark = placemarks.first {
+                let address = [
+                    placemark.administrativeArea, // 시/도
+                    placemark.locality, // 시
+                    placemark.subLocality, // 동네
+                    placemark.thoroughfare, // 상세주소
+                    // placemark.name // 장소명인데 일단 도로명으로 뜨긴 함... 검색용일지도?
+                ]
+                    .compactMap { $0 }
+                    .joined(separator: " ")
+                
+                self.currentAddress = address
+                print("✅ 역지오코딩 주소: \(address)")
+            }
+        } catch {
+            print("❌ 역지오코딩 실패: \(error.localizedDescription)")
+        }
+    }
+}
+
+extension LocationManager {
+    func printCurrentLocation() async {
         if let location = currentLocation {
             print("현재 위치: 위도 \(location.coordinate.latitude), 경도 \(location.coordinate.longitude)")
+            await reverseGeocode(location: location)
         } else {
             print("현재 위치 정보를 가져올 수 없습니다.")
         }

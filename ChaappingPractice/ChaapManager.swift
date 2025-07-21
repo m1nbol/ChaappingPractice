@@ -163,28 +163,54 @@ class ChaapManager: NSObject, ObservableObject, NISessionDelegate, MCSessionDele
     }
 
     func updateState(from obj: NINearbyObject) {
-        let isClose = obj.distance.map { $0 < 0.5 } ?? false
-        let isVeryClose = obj.distance.map { $0 < 0.3 } ?? false
-        
-        DispatchQueue.main.async {
-            if let d = obj.distance {
-                self.distanceText = String(format: "%.2f m", d)
+        Task {
+            let isClose = obj.distance.map { $0 < 0.5 } ?? false
+            let isVeryClose = obj.distance.map { $0 < 0.3 } ?? false
+            
+            await MainActor.run {
+                if let d = obj.distance {
+                    self.distanceText = String(format: "%.2f m", d)
+                }
+                if isClose {
+                    self.state = .closeUpInFOV
+                    self.monkeyEmoji = "👐"
+                } else {
+                    self.state = .notCloseUpInFOV
+                    self.monkeyEmoji = "🥹"
+                }
             }
             
             if isVeryClose && !self.hasPrintedLocation {
                 self.hasPrintedLocation = true
-                self.locationManager.printCurrentLocation()
+                await self.locationManager.printCurrentLocation()
             }
-            
             if isClose {
-                self.state = .closeUpInFOV
-                self.monkeyEmoji = "👐"
-                self.impact.impactOccurred()
-            } else {
-                self.state = .notCloseUpInFOV
-                self.monkeyEmoji = "🥹"
+                await self.impact.impactOccurred()
             }
         }
+            
+//        let isClose = obj.distance.map { $0 < 0.5 } ?? false
+//        let isVeryClose = obj.distance.map { $0 < 0.3 } ?? false
+//        
+//        Task {
+//            if let d = obj.distance {
+//                self.distanceText = String(format: "%.2f m", d)
+//            }
+//            
+//            if isVeryClose && !self.hasPrintedLocation {
+//                self.hasPrintedLocation = true
+//                await self.locationManager.printCurrentLocation()
+//            }
+//            
+//            if isClose {
+//                self.state = .closeUpInFOV
+//                self.monkeyEmoji = "👐"
+//                await self.impact.impactOccurred()
+//            } else {
+//                self.state = .notCloseUpInFOV
+//                self.monkeyEmoji = "🥹"
+//            }
+//        }
     }
 
     func session(_ session: NISession, didRemove nearbyObjects: [NINearbyObject], reason: NINearbyObject.RemovalReason) {
