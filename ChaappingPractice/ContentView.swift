@@ -37,8 +37,8 @@ struct ContentView: View {
         }
         .padding()
         .animation(.easeInOut, value: manager.state)
-        .onChange(of: manager.pendingInvitation) { peer in
-            showInviteAlert = peer != nil
+        .onChange(of: manager.pendingInvitation) {
+            showInviteAlert = manager.pendingInvitation != nil
         }
         .alert("연결 요청", isPresented: $showInviteAlert) {
             Button("수락") {
