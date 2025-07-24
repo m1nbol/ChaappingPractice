@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
-    @StateObject private var manager = ChaapManager()
+    @Environment(\.modelContext) private var modelContext
+    @State var manager = ChaapManager()
+    @State var viewModel: ChaapViewModel?
     @State private var showInviteAlert = false
+    @State private var showChaapListView = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -34,9 +38,29 @@ struct ContentView: View {
 //                }
 //                .foregroundColor(.red)
             }
+            
+            Button {
+                showChaapListView = true
+            } label: {
+                Label("저장된 Chaap 보기", systemImage: "book")
+                    .font(.headline)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(.blue)
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal)
+            }
+            .padding(.top, 40)
+        }
+        .sheet(isPresented: $showChaapListView) {
+            ChaapListView()
+                .modelContext(modelContext)
+        }
+        .task {
+            viewModel = ChaapViewModel(manager: manager, modelContext: modelContext)
         }
         .padding()
-        .animation(.easeInOut, value: manager.state)
         .onChange(of: manager.pendingInvitation) {
             showInviteAlert = manager.pendingInvitation != nil
         }

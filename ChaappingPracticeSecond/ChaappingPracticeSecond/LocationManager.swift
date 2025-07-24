@@ -1,8 +1,8 @@
 //
 //  LocationManager.swift
-//  ChaappingPractice
+//  ChaappingPracticeSecond
 //
-//  Created by BoMin Lee on 7/14/25.
+//  Created by BoMin Lee on 7/23/25.
 //
 
 import Foundation
@@ -17,7 +17,6 @@ class LocationManager: NSObject {
     private let locationManager = CLLocationManager()
     private let geocoder = CLGeocoder()
     
-    // MARK: - Published Properties
     var currentLocation: CLLocation?
     var currentHeading: CLHeading?
     
@@ -28,7 +27,6 @@ class LocationManager: NSObject {
     
     var authorizationStatus: CLAuthorizationStatus = .notDetermined
     
-    // MARK: - Init
     override init() {
         super.init()
         
@@ -40,13 +38,13 @@ class LocationManager: NSObject {
         startUpdatingLocation()
     }
     
-    // MARK: - 권한 요청
+    /// 권한 요청
     func requestAuthorization() {
         locationManager.requestWhenInUseAuthorization()
         locationManager.requestAlwaysAuthorization()
     }
 
-    // MARK: - 위치 추적
+    /// 위치 추적
     func startUpdatingLocation() {
         locationManager.startUpdatingLocation()
     }
@@ -55,7 +53,7 @@ class LocationManager: NSObject {
         locationManager.stopUpdatingLocation()
     }
 
-    // MARK: - Significant Location Change
+    /// Significant Location Change
     func startMonitoringSignificantLocationChanges() {
         locationManager.startMonitoringSignificantLocationChanges()
     }
@@ -93,7 +91,7 @@ extension LocationManager: CLLocationManagerDelegate {
     }
 }
 
-//MARK: - Reverse Geocoding
+/// Reverse Geocoding
 extension LocationManager {
     @MainActor
     func reverseGeocode(location: CLLocation) async {
@@ -117,11 +115,6 @@ extension LocationManager {
             print("❌ 역지오코딩 실패: \(error.localizedDescription)")
         }
     }
-    
-//    @MainActor
-//    func reverseGeocodeCurrentLocation() async -> String? {
-//        guard let location = curre
-//    }
 }
 
 extension LocationManager {
@@ -134,3 +127,4 @@ extension LocationManager {
         }
     }
 }
+
